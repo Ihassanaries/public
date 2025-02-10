@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 # Initialize YouTube API
 def initialize_youtube(api_key):
-    return build('youtube', 'v3', developerKey=api_key)
+    return build('youtube', 'v3', developerKey=AIzaSyB2Dbul8LJQjAR-eFF307RjzLj9id8OO1I)
 
 # Fetch videos uploaded in the last 7 days
 def fetch_recent_videos(youtube, keywords):
