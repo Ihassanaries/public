@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 
 # Function to initialize YouTube API
-def initialize_youtube(AIzaSyB2Dbul8LJQjAR-eFF307RjzLj9id8OO1I):
+def initialize_youtube(api_key):
     return build('youtube', 'v3', developerKey=api_key)
 
 # Function to fetch videos uploaded in the last 7 days
@@ -44,7 +44,7 @@ def calculate_outlier_score(video_views, channel_avg_views, channel_std_dev_view
 
 # Main function
 def main():
-    api_key = input("Enter your YouTube API Key: ").strip()  # Ask user for API key
+    api_key = input("Enter your YouTube API Key: ").strip()  # Enter API key safely
     youtube = initialize_youtube(api_key)  # Pass API key correctly
 
     # Prompt user for at least three keywords
