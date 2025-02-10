@@ -44,8 +44,8 @@ def calculate_outlier_score(video_views, channel_avg_views, channel_std_dev_view
 
 # Main function
 def main():
-    api_key = input("Enter your YouTube API Key: ").strip()
-    youtube = initialize_youtube(api_key)
+    api_key = input("Enter your YouTube API Key: ").strip()  # Ask user for API key
+    youtube = initialize_youtube(api_key)  # Pass API key correctly
 
     # Prompt user for at least three keywords
     keywords = []
