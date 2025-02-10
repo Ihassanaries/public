@@ -2,6 +2,7 @@ import streamlit as st
 from googleapiclient.discovery import build
 import pandas as pd
 import numpy as np
+import math  # ✅ FIX: Import math module separately
 from datetime import datetime, timedelta
 
 # Your YouTube API Key
@@ -47,7 +48,7 @@ def calculate_outlier_score(video_views, channel_avg_views, channel_std_dev_view
     if channel_std_dev_views == 0:
         return 0  # Avoid division by zero
     z_score = (video_views - channel_avg_views) / channel_std_dev_views
-    percentile = 100 * (1 - 0.5 * (1 + np.math.erf(z_score / np.sqrt(2))))
+    percentile = 100 * (1 - 0.5 * (1 + math.erf(z_score / math.sqrt(2))))  # ✅ FIXED
     return round(percentile, 2)
 
 # Streamlit UI
@@ -148,4 +149,3 @@ if st.button("Find Viral Videos") and len(keywords) >= 3:
             file_name="viral_youtube_videos.csv",
             mime="text/csv"
         )
-
