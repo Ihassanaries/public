@@ -1,13 +1,17 @@
+import streamlit as st
 from googleapiclient.discovery import build
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# Initialize YouTube API
-def initialize_youtube(api_key):
-    return build('youtube', 'v3', developerKey=AIzaSyB2Dbul8LJQjAR-eFF307RjzLj9id8OO1I)
+# Your YouTube API Key
+API_KEY = "AIzaSyB2Dbul8LJQjAR-eFF307RjzLj9id8OO1I"
 
-# Fetch videos uploaded in the last 7 days
+# Function to initialize YouTube API
+def initialize_youtube(api_key):
+    return build('youtube', 'v3', developerKey=api_key)
+
+# Function to fetch videos uploaded in the last 7 days
 def fetch_recent_videos(youtube, keywords):
     search_response = youtube.search().list(
         q=' '.join(keywords),
@@ -18,7 +22,7 @@ def fetch_recent_videos(youtube, keywords):
     ).execute()
     return search_response.get('items', [])
 
-# Fetch video statistics
+# Function to fetch video statistics
 def fetch_video_stats(youtube, video_ids):
     if not video_ids:
         return []
@@ -28,7 +32,7 @@ def fetch_video_stats(youtube, video_ids):
     ).execute()
     return stats_response.get('items', [])
 
-# Fetch channel statistics
+# Function to fetch channel statistics
 def fetch_channel_stats(youtube, channel_ids):
     if not channel_ids:
         return []
@@ -38,7 +42,7 @@ def fetch_channel_stats(youtube, channel_ids):
     ).execute()
     return channels_response.get('items', [])
 
-# Calculate outlier score
+# Function to calculate outlier score
 def calculate_outlier_score(video_views, channel_avg_views, channel_std_dev_views):
     if channel_std_dev_views == 0:
         return 0  # Avoid division by zero
@@ -46,25 +50,29 @@ def calculate_outlier_score(video_views, channel_avg_views, channel_std_dev_view
     percentile = 100 * (1 - 0.5 * (1 + np.math.erf(z_score / np.sqrt(2))))
     return round(percentile, 2)
 
-# Main function
-def main():
-    api_key = input("Enter your YouTube API Key: ").strip()
-    youtube = initialize_youtube(api_key)
+# Streamlit UI
+st.title("🔍 YouTube Viral Topic Finder")
+st.write("Enter at least 3 keywords to find trending videos from new channels.")
 
-    # Ask user for 3+ keywords
-    keywords = []
-    while len(keywords) < 3:
-        keyword = input(f"Enter keyword {len(keywords) + 1}: ").strip()
-        if keyword:
-            keywords.append(keyword)
-        else:
-            print("Keyword cannot be empty. Please try again.")
+# User Input for Keywords
+keywords = []
+for i in range(3):
+    keyword = st.text_input(f"Enter keyword {i + 1}:", key=f"keyword_{i}")
+    if keyword:
+        keywords.append(keyword)
+
+# Search Button
+if st.button("Find Viral Videos") and len(keywords) >= 3:
+    st.write("🔄 Searching for trending videos...")
+
+    # Initialize YouTube API
+    youtube = initialize_youtube(API_KEY)
 
     # Fetch recent videos
     videos = fetch_recent_videos(youtube, keywords)
     if not videos:
-        print("No videos found for the given keywords in the past 7 days.")
-        return
+        st.error("❌ No trending videos found in the past 7 days.")
+        st.stop()
 
     video_ids = [video['id']['videoId'] for video in videos if 'videoId' in video['id']]
     channel_ids = list(set([video['snippet'].get('channelId', '') for video in videos]))
@@ -128,10 +136,16 @@ def main():
     viral_videos = df[df['Outlier Score'] > 50].sort_values(by='Views', ascending=False)
 
     if viral_videos.empty:
-        print("No viral videos found based on the criteria.")
+        st.warning("⚠️ No viral videos found based on the criteria.")
     else:
-        print("\nTop Viral Videos:")
-        print(viral_videos.to_string(index=False))  # Clean print without index
+        st.success("🎉 Found viral videos!")
+        st.dataframe(viral_videos)
 
-if __name__ == "__main__":
-    main()
+        # Download Button
+        st.download_button(
+            label="📥 Download CSV",
+            data=viral_videos.to_csv(index=False),
+            file_name="viral_youtube_videos.csv",
+            mime="text/csv"
+        )
+
